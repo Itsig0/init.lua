@@ -11,7 +11,6 @@ return {
         "L3MON4D3/LuaSnip",
         "saadparwaiz1/cmp_luasnip",
         "j-hui/fidget.nvim",
-        "nvimtools/none-ls.nvim",
     },
 
     config = function()
@@ -29,12 +28,11 @@ return {
         require("mason-lspconfig").setup({
             ensure_installed = {
                 "lua_ls",
-                -- "rust_analyzer",
+                "rust_analyzer",
                 "gopls",
             },
             handlers = {
                 function(server_name) -- default handler (optional)
-
                     require("lspconfig")[server_name].setup {
                         capabilities = capabilities
                     }
@@ -54,6 +52,23 @@ return {
                         }
                     }
                 end,
+
+                ["rust_analyzer"] = function()
+                    local lspconfig = require("lspconfig")
+                    local util = require("lspconfig/util")
+                    lspconfig.rust_analyzer.setup {
+                        filetypes = { "rust" },
+                        root_dir = util.root_pattern("Cargo.toml"),
+                        opts = {
+                            inlay_hints = { enabled = true },
+                        },
+                        settings = {
+                            ['rust-analyzer'] = {
+                                cargo = { allFeatures = true, },
+                            },
+                        },
+                    }
+                end
             }
         })
 
@@ -71,23 +86,23 @@ return {
                 ['<C-y>'] = cmp.mapping.confirm({ select = true }),
                 ["<C-Space>"] = cmp.mapping.complete(),
 
-               ["<Tab>"] = cmp.mapping(function(fallback)
-                   --if cmp.visible() then
-                   --    cmp.select_next_item()
-                   if luasnip.locally_jumpable(1) then
-                       luasnip.jump(1)
-                   else
-                       fallback()
-                   end
-               end, { "i", "s"}),
+                ["<Tab>"] = cmp.mapping(function(fallback)
+                    --if cmp.visible() then
+                    --    cmp.select_next_item()
+                    if luasnip.locally_jumpable(1) then
+                        luasnip.jump(1)
+                    else
+                        fallback()
+                    end
+                end, { "i", "s" }),
 
             }),
             sources = cmp.config.sources({
                 { name = 'luasnip' }, -- For luasnip users.
                 { name = 'nvim_lsp' },
             }, {
-                    { name = 'buffer' },
-                })
+                { name = 'buffer' },
+            })
         })
 
         vim.diagnostic.config({
@@ -100,31 +115,6 @@ return {
                 header = "",
                 prefix = "",
             },
-        })
-
-        local null_ls = require("null-ls")
-        local autogroup = vim.api.nvim_create_augroup("LspFormatting", {})
-
-        null_ls.setup({
-            sources = {
-                null_ls.builtins.formatting.gofumpt,
-                null_ls.builtins.formatting.goimports,
-            },
-            on_attach = function (client, bufnr)
-                if client.supports_method("textDocument/formatting") then
-                    vim.api.nvim_clear_autocmds({
-                        group = autogroup,
-                        buffer = bufnr,
-                    })
-                    vim.api.nvim_create_autocmd("BufWritePre", {
-                        group = autogroup,
-                        buffer = bufnr,
-                        callback = function ()
-                            vim.lsp.buf.format({ bufnr = bufnr })
-                        end,
-                    })
-                end
-            end,
         })
     end
 }
