@@ -20,7 +20,7 @@ return {
         formatters_by_ft = {
             lua = { "stylua" },
             javascript = { "tsserver" },
-            go = { { "gofumts", "goimports" } },
+            go = { "gofumts", "goimports" },
             templ = { "templ" },
         },
         -- Set up format-on-save

@@ -33,9 +33,7 @@ return {
             },
             handlers = {
                 function(server_name) -- default handler (optional)
-                    require("lspconfig")[server_name].setup {
-                        capabilities = capabilities
-                    }
+                    vim.lsp.enable(server_name)
                 end,
 
                 ["lua_ls"] = function()
@@ -107,6 +105,7 @@ return {
 
         vim.diagnostic.config({
             -- update_in_insert = true,
+            virtual_text = true,
             float = {
                 focusable = false,
                 style = "minimal",
